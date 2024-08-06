@@ -1,0 +1,12 @@
+services:
+  db-template:
+    image: postgres:15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_HOST_AUTH_METHOD: md5
+    command: ["postgres", "-c", "config_file=/postgresql.conf"]
+    configs:
+      - source: postgresql.conf
+        target: /postgresql.conf
+    restart: on-failure

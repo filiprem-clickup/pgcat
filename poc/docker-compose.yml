@@ -1,0 +1,48 @@
+services:
+  db1:
+    hostname: db1
+    extends:
+      file: ./docker-compose-db-template.yml
+      service: db-template
+    configs:
+      - source: init-primary.sh
+        target: /docker-entrypoint-initdb.d/init-primary.sh
+    ports: ["5432:5432"]
+  db2:
+    hostname: db2
+    extends:
+      file: ./docker-compose-db-template.yml
+      service: db-template
+    configs:
+      - source: init-replica.sh
+        target: /docker-entrypoint-initdb.d/init-replica.sh
+    depends_on: ["db1"]
+    ports: ["5433:5432"]
+  db3:
+    hostname: db3
+    extends:
+      file: ./docker-compose-db-template.yml
+      service: db-template
+    configs:
+      - source: init-replica.sh
+        target: /docker-entrypoint-initdb.d/init-replica.sh
+    depends_on: ["db1"]
+    ports: ["5434:5432"]
+  pgcat:
+    hostname: pooler1
+    build: ..
+    command: ["pgcat", "/pgcat.toml"]
+    configs:
+      - source: pgcat.toml
+        target: /pgcat.toml
+    depends_on: ["db1", "db2", "db3"]
+    ports: ["6432:6432", "9930:9930"]
+configs:
+  pgcat.toml:
+    file: ./pgcat.toml
+  postgresql.conf:
+    file: ./postgresql.conf
+  init-primary.sh:
+    file: ./init-primary.sh
+  init-replica.sh:
+    file: ./init-replica.sh
