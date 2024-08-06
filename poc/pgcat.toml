@@ -15,6 +15,10 @@ port = 6432
 admin_username = "pgcat"
 admin_password = "pgcat"
 
+# prometheus exporter is not enabled by default contrary to docs
+enable_prometheus_exporter = true
+prometheus_exporter_port = 9930
+
 # adjust timeouts
 connect_timeout = 2500  # 2.5 s; default: 5 s
 idle_timeout = 15000  # 15 s; default: 30 s
@@ -48,9 +52,9 @@ servers = [
 [pools.clickup.users.0]
 username = "app1_read"
 password = "app1_read"
-pool_size = 50
+pool_size = 800
 
 [pools.clickup.users.1]
 username = "app1_write"
 password = "app1_write"
-pool_size = 10
+pool_size = 40
