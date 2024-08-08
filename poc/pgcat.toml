@@ -20,41 +20,56 @@ enable_prometheus_exporter = true
 prometheus_exporter_port = 9930
 
 # adjust timeouts
-connect_timeout = 2500  # 2.5 s; default: 5 s
-idle_timeout = 15000  # 15 s; default: 30 s
-server_lifetime = 43200000  # 12 h; default: 24 h
-idle_client_in_transaction_timeout = 7200  # 2 h; default: not set
-shutdown_timeout = 30000  # 30 s; default: 60 s
+ban_time = 30                             # 30 s; default: 60 s
+connect_timeout = 2500                    # 2.5 s; default: 5 s
+idle_timeout = 15000                      # 15 s; default: 30 s
+server_lifetime = 43200000                # 12 h; default: 24 h
+idle_client_in_transaction_timeout = 7200 # 2 h; default: not set
+shutdown_timeout = 30000                  # 30 s; default: 60 s
+
+# Enable TCP keepalives (default ???)
+tcp_keepalives_idle = 5
+tcp_keepalives_count = 5
+tcp_keepalives_interval = 5
 
 # Enable DNS cache to avoid slowdown when using DNS names to reach servers
-dns_cache_enabled = true  # default: false
-dns_max_ttl = 30  # 30 s; default: 30 s
+dns_cache_enabled = true # default: false
+dns_max_ttl = 30         # 30 s; default: 30 s
 
-[pools.clickup]
+[pools.app1_read]
 pool_mode = "transaction"
-load_balancing_mode = "random"  # "random" or "loc"; default: "random"
-default_role = "any" # any/replica/primary; default: "any"
-query_parser_enabled = true  # default: true
-query_parser_read_write_splitting = true  # default: false
-primary_reads_enabled = true  # default: true
-
-[pools.clickup.shards.0]
+load_balancing_mode = "random"
+default_role = "replica"
+query_parser_enabled = false
+query_parser_read_write_splitting = false
+primary_reads_enabled = true
+[pools.app1_read.shards.0]
 database = "clickup"
-# Note: if you specify more than one primary, you get this error:
-# ERROR ThreadId(01) pgcat::config: Shard clickup has more than one primary configured
 servers = [
-  ["db1", 5432, "primary"],
-  ["db2", 5432, "replica"],
-  ["db3", 5432, "replica"],
-#  ["dbx", 5432, "replica"],  # this one is intentionally broken (host does not exist)
+  [ "db1", 5432, "replica", ],
+  [ "db2", 5432, "replica", ],
+  [ "db3", 5432, "replica", ],
 ]
-
-[pools.clickup.users.0]
+[pools.app1_read.users.0]
 username = "app1_read"
 password = "app1_read"
 pool_size = 800
 
-[pools.clickup.users.1]
+[pools.app1_write]
+pool_mode = "transaction"
+load_balancing_mode = "random"
+default_role = "primary"
+query_parser_enabled = false
+query_parser_read_write_splitting = false
+primary_reads_enabled = true
+[pools.app1_write.shards.0]
+database = "clickup"
+servers = [
+  [ "db1", 5432, "primary", ],
+  [ "db2", 5432, "replica", ],
+  [ "db3", 5432, "replica", ],
+]
+[pools.app1_write.users.0]
 username = "app1_write"
 password = "app1_write"
 pool_size = 40
