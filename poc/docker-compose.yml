@@ -16,7 +16,6 @@ services:
     configs:
       - source: init-replica.sh
         target: /docker-entrypoint-initdb.d/init-replica.sh
-    depends_on: ["db1"]
     ports: ["5433:5432"]
   db3:
     hostname: db3
@@ -26,17 +25,43 @@ services:
     configs:
       - source: init-replica.sh
         target: /docker-entrypoint-initdb.d/init-replica.sh
-    depends_on: ["db1"]
     ports: ["5434:5432"]
-  pgcat:
-    hostname: pooler1
+  db4:
+    hostname: db4
+    extends:
+      file: ./docker-compose-db-template.yml
+      service: db-template
+    configs:
+      - source: init-replica.sh
+        target: /docker-entrypoint-initdb.d/init-replica.sh
+    ports: ["5435:5432"]
+  pgcat1:
+    hostname: pgcat1
     build: ..
     command: ["pgcat", "/pgcat.toml"]
     configs:
       - source: pgcat.toml
         target: /pgcat.toml
-    depends_on: ["db1", "db2", "db3"]
     ports: ["6432:6432", "9930:9930"]
+  pgcat2:
+    profiles:
+      - ha
+    hostname: pgcat2
+    build: ..
+    command: ["pgcat", "/pgcat.toml"]
+    configs:
+      - source: pgcat.toml
+        target: /pgcat.toml
+    ports: ["6433:6432", "9931:9930"]
+  haproxy:
+    profiles:
+      - ha
+    image: haproxy:3.0
+    command: ["haproxy", "-f", "/haproxy.conf"]
+    configs:
+      - source: haproxy.conf
+        target: /haproxy.conf
+    ports: ["7432:6432"]
 configs:
   pgcat.toml:
     file: ./pgcat.toml
@@ -46,3 +71,5 @@ configs:
     file: ./init-primary.sh
   init-replica.sh:
     file: ./init-replica.sh
+  haproxy.conf:
+    file: ./haproxy.conf

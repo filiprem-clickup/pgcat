@@ -1,7 +1,7 @@
-# POC config version 2:
-# - use same pool for reads and writes
-# - rely on pgcat's query parser read/write splitting feature
-# - do not use pgcat sharding feature
+# POC config:
+# - use separate pool for reads and writes
+# - do not use pgcat's query parser read/write splitting feature
+# - do not use pgcat's sharding feature
 
 # database backend consists of one primary and 3 replicas (PRRs).
 
@@ -46,9 +46,9 @@ primary_reads_enabled = true
 [pools.app1_read.shards.0]
 database = "clickup"
 servers = [
-  [ "db1", 5432, "replica", ],
   [ "db2", 5432, "replica", ],
   [ "db3", 5432, "replica", ],
+  [ "db4", 5432, "replica", ],
 ]
 [pools.app1_read.users.0]
 username = "app1_read"
@@ -66,8 +66,6 @@ primary_reads_enabled = true
 database = "clickup"
 servers = [
   [ "db1", 5432, "primary", ],
-  [ "db2", 5432, "replica", ],
-  [ "db3", 5432, "replica", ],
 ]
 [pools.app1_write.users.0]
 username = "app1_write"
